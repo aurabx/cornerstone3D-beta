@@ -81,6 +81,8 @@ export default async function createImageIdsAndCacheMetaData({
     return imageId;
   });
 
+  console.log('find:modality', modality);
+
   // we don't want to add non-pet
   // Note: for 99% of scanners SUV calculation is consistent bw slices
   if (modality === 'PT') {

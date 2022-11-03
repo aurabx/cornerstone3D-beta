@@ -30,13 +30,33 @@ setTitleAndDescription(
   'Demonstrates how to interact with a Stack viewport.'
 );
 
+const viewportIds = [
+  'CT_SAGITTAL_STACK_1',
+  'CT_SAGITTAL_STACK_2',
+  //'CT_SAGITTAL_STACK_3',
+];
+
+const size = '500px';
 const content = document.getElementById('content');
 const element = document.createElement('div');
-element.id = 'cornerstone-element';
-element.style.width = '500px';
-element.style.height = '500px';
+const element2 = document.createElement('div');
 
-content.appendChild(element);
+const viewportGrid = document.createElement('div');
+
+viewportGrid.style.display = 'flex';
+viewportGrid.style.display = 'flex';
+viewportGrid.style.flexDirection = 'row';
+
+element.id = 'cornerstone-element';
+element.style.width = size;
+element.style.height = size;
+element2.style.width = size;
+element2.style.height = size;
+
+viewportGrid.appendChild(element);
+viewportGrid.appendChild(element2);
+
+content.appendChild(viewportGrid);
 
 addButtonToToolbar({
   title: 'Set VOI Range',
@@ -44,15 +64,17 @@ addButtonToToolbar({
     // Get the rendering engine
     const renderingEngine = getRenderingEngine(renderingEngineId);
 
-    // Get the stack viewport
-    const viewport = <Types.IStackViewport>(
-      renderingEngine.getViewport(viewportId)
-    );
+    for (const viewportId of viewportIds) {
+      // Get the stack viewport
+      const viewport = <Types.IStackViewport>(
+        renderingEngine.getViewport(viewportId)
+      );
 
-    // Set a range to highlight bones
-    viewport.setProperties({ voiRange: { upper: 2500, lower: -1500 } });
+      // Set a range to highlight bones
+      viewport.setProperties({ voiRange: { upper: 2500, lower: -1500 } });
 
-    viewport.render();
+      viewport.render();
+    }
   },
 });
 
@@ -62,22 +84,24 @@ addButtonToToolbar({
     // Get the rendering engine
     const renderingEngine = getRenderingEngine(renderingEngineId);
 
-    // Get the stack viewport
-    const viewport = <Types.IStackViewport>(
-      renderingEngine.getViewport(viewportId)
-    );
+    for (const viewportId of viewportIds) {
+      // Get the stack viewport
+      const viewport = <Types.IStackViewport>(
+        renderingEngine.getViewport(viewportId)
+      );
 
-    // Get the current index of the image displayed
-    const currentImageIdIndex = viewport.getCurrentImageIdIndex();
+      // Get the current index of the image displayed
+      const currentImageIdIndex = viewport.getCurrentImageIdIndex();
 
-    // Increment the index, clamping to the last image if necessary
-    const numImages = viewport.getImageIds().length;
-    let newImageIdIndex = currentImageIdIndex + 1;
+      // Increment the index, clamping to the last image if necessary
+      const numImages = viewport.getImageIds().length;
+      let newImageIdIndex = currentImageIdIndex + 1;
 
-    newImageIdIndex = Math.min(newImageIdIndex, numImages - 1);
+      newImageIdIndex = Math.min(newImageIdIndex, numImages - 1);
 
-    // Set the new image index, the viewport itself does a re-render
-    viewport.setImageIdIndex(newImageIdIndex);
+      // Set the new image index, the viewport itself does a re-render
+      viewport.setImageIdIndex(newImageIdIndex);
+    }
   },
 });
 
@@ -87,21 +111,23 @@ addButtonToToolbar({
     // Get the rendering engine
     const renderingEngine = getRenderingEngine(renderingEngineId);
 
-    // Get the stack viewport
-    const viewport = <Types.IStackViewport>(
-      renderingEngine.getViewport(viewportId)
-    );
+    for (const viewportId of viewportIds) {
+      // Get the stack viewport
+      const viewport = <Types.IStackViewport>(
+        renderingEngine.getViewport(viewportId)
+      );
 
-    // Get the current index of the image displayed
-    const currentImageIdIndex = viewport.getCurrentImageIdIndex();
+      // Get the current index of the image displayed
+      const currentImageIdIndex = viewport.getCurrentImageIdIndex();
 
-    // Increment the index, clamping to the first image if necessary
-    let newImageIdIndex = currentImageIdIndex - 1;
+      // Increment the index, clamping to the first image if necessary
+      let newImageIdIndex = currentImageIdIndex - 1;
 
-    newImageIdIndex = Math.max(newImageIdIndex, 0);
+      newImageIdIndex = Math.max(newImageIdIndex, 0);
 
-    // Set the new image index, the viewport itself does a re-render
-    viewport.setImageIdIndex(newImageIdIndex);
+      // Set the new image index, the viewport itself does a re-render
+      viewport.setImageIdIndex(newImageIdIndex);
+    }
   },
 });
 
@@ -110,16 +136,17 @@ addButtonToToolbar({
   onClick: () => {
     // Get the rendering engine
     const renderingEngine = getRenderingEngine(renderingEngineId);
+    for (const viewportId of viewportIds) {
+      // Get the stack viewport
+      const viewport = <Types.IStackViewport>(
+        renderingEngine.getViewport(viewportId)
+      );
 
-    // Get the stack viewport
-    const viewport = <Types.IStackViewport>(
-      renderingEngine.getViewport(viewportId)
-    );
+      const { flipHorizontal } = viewport.getCamera();
+      viewport.setCamera({ flipHorizontal: !flipHorizontal });
 
-    const { flipHorizontal } = viewport.getCamera();
-    viewport.setCamera({ flipHorizontal: !flipHorizontal });
-
-    viewport.render();
+      viewport.render();
+    }
   },
 });
 
@@ -129,16 +156,18 @@ addButtonToToolbar({
     // Get the rendering engine
     const renderingEngine = getRenderingEngine(renderingEngineId);
 
-    // Get the stack viewport
-    const viewport = <Types.IStackViewport>(
-      renderingEngine.getViewport(viewportId)
-    );
+    for (const viewportId of viewportIds) {
+      // Get the stack viewport
+      const viewport = <Types.IStackViewport>(
+        renderingEngine.getViewport(viewportId)
+      );
 
-    const { flipVertical } = viewport.getCamera();
+      const { flipVertical } = viewport.getCamera();
 
-    viewport.setCamera({ flipVertical: !flipVertical });
+      viewport.setCamera({ flipVertical: !flipVertical });
 
-    viewport.render();
+      viewport.render();
+    }
   },
 });
 
@@ -148,16 +177,18 @@ addButtonToToolbar({
     // Get the rendering engine
     const renderingEngine = getRenderingEngine(renderingEngineId);
 
-    // Get the stack viewport
-    const viewport = <Types.IStackViewport>(
-      renderingEngine.getViewport(viewportId)
-    );
+    for (const viewportId of viewportIds) {
+      // Get the stack viewport
+      const viewport = <Types.IStackViewport>(
+        renderingEngine.getViewport(viewportId)
+      );
 
-    const rotation = Math.random() * 360;
+      const rotation = Math.random() * 360;
 
-    viewport.setProperties({ rotation });
+      viewport.setProperties({ rotation });
 
-    viewport.render();
+      viewport.render();
+    }
   },
 });
 
@@ -167,48 +198,55 @@ addButtonToToolbar({
     // Get the rendering engine
     const renderingEngine = getRenderingEngine(renderingEngineId);
 
-    // Get the stack viewport
-    const viewport = <Types.IStackViewport>(
-      renderingEngine.getViewport(viewportId)
-    );
+    for (const viewportId of viewportIds) {
+      // Get the stack viewport
+      const viewport = <Types.IStackViewport>(
+        renderingEngine.getViewport(viewportId)
+      );
 
-    const { invert } = viewport.getProperties();
+      const { invert } = viewport.getProperties();
 
-    viewport.setProperties({ invert: !invert });
+      viewport.setProperties({ invert: !invert });
 
-    viewport.render();
+      viewport.render();
+    }
   },
 });
 
 addButtonToToolbar({
   title: 'Apply Random Zoom And Pan',
-  onClick: () => {
+  onClick: async () => {
     // Get the rendering engine
     const renderingEngine = getRenderingEngine(renderingEngineId);
 
-    // Get the stack viewport
-    const viewport = <Types.IStackViewport>(
-      renderingEngine.getViewport(viewportId)
-    );
+    for await (const viewportId of viewportIds) {
+      // Get the stack viewport
+      const viewport = <Types.IStackViewport>(
+        renderingEngine.getViewport(viewportId)
+      );
 
-    // Reset the camera so that we can set some pan and zoom relative to the
-    // defaults for this demo. Note that changes could be relative instead.
-    viewport.resetCamera();
+      // Reset the camera so that we can set some pan and zoom relative to the
+      // defaults for this demo. Note that changes could be relative instead.
+      viewport.resetCamera();
 
-    // Get the current camera properties
-    const camera = viewport.getCamera();
+      // Get the current camera properties
+      const camera = viewport.getCamera();
 
-    const { parallelScale, position, focalPoint } =
-      cameraHelpers.getRandomlyTranslatedAndZoomedCameraProperties(camera, 50);
+      const { parallelScale, position, focalPoint } =
+        cameraHelpers.getRandomlyTranslatedAndZoomedCameraProperties(
+          camera,
+          50
+        );
 
-    const newCamera = {
-      parallelScale,
-      position: <Types.Point3>position,
-      focalPoint: <Types.Point3>focalPoint,
-    };
+      const newCamera = {
+        parallelScale,
+        position: <Types.Point3>position,
+        focalPoint: <Types.Point3>focalPoint,
+      };
 
-    viewport.setCamera(newCamera);
-    viewport.render();
+      viewport.setCamera(newCamera);
+      viewport.render();
+    }
   },
 });
 
@@ -218,16 +256,18 @@ addButtonToToolbar({
     // Get the rendering engine
     const renderingEngine = getRenderingEngine(renderingEngineId);
 
-    // Get the stack viewport
-    const viewport = <Types.IStackViewport>(
-      renderingEngine.getViewport(viewportId)
-    );
+    for (const viewportId of viewportIds) {
+      // Get the stack viewport
+      const viewport = <Types.IStackViewport>(
+        renderingEngine.getViewport(viewportId)
+      );
 
-    // Resets the viewport's camera
-    viewport.resetCamera();
-    // Resets the viewport's properties
-    viewport.resetProperties();
-    viewport.render();
+      // Resets the viewport's camera
+      viewport.resetCamera();
+      // Resets the viewport's properties
+      viewport.resetProperties();
+      viewport.render();
+    }
   },
 });
 
@@ -253,33 +293,55 @@ async function run() {
 
   // Create a stack viewport
 
-  const viewportInput = {
-    viewportId,
-    type: ViewportType.STACK,
-    element,
-    defaultOptions: {
-      background: <Types.Point3>[0.2, 0, 0.2],
+  // const viewportInput = {
+  //   viewportId,
+  //   type: ViewportType.STACK,
+  //   element,
+  //   defaultOptions: {
+  //     background: <Types.Point3>[0.2, 0, 0.2],
+  //   },
+  // };
+
+  const viewportInputArray = [
+    {
+      viewportId: viewportIds[0],
+      type: ViewportType.STACK,
+      element,
+      defaultOptions: {
+        background: <Types.Point3>[0.2, 0, 0.2],
+      },
     },
-  };
+    {
+      viewportId: viewportIds[1],
+      type: ViewportType.STACK,
+      element: element2,
+      defaultOptions: {
+        background: <Types.Point3>[0.2, 0, 0.2],
+      },
+    },
+  ];
 
-  renderingEngine.enableElement(viewportInput);
+  //renderingEngine.enableElement(viewportInput);
+  renderingEngine.setViewports(viewportInputArray);
 
-  // Get the stack viewport that was created
-  const viewport = <Types.IStackViewport>(
-    renderingEngine.getViewport(viewportId)
-  );
+  for (const viewportId of viewportIds) {
+    // Get the stack viewport that was created
+    const viewport = <Types.IStackViewport>(
+      renderingEngine.getViewport(viewportId)
+    );
 
-  // Define a stack containing a few images
-  const stack = [imageIds[0], imageIds[1], imageIds[2]];
+    // Define a stack containing a few images
+    const stack = [imageIds[0], imageIds[1], imageIds[2]];
 
-  // Set the stack on the viewport
-  await viewport.setStack(stack);
+    // Set the stack on the viewport
+    await viewport.setStack(stack);
 
-  // Set the VOI of the stack
-  viewport.setProperties({ voiRange: ctVoiRange });
+    // Set the VOI of the stack
+    viewport.setProperties({ voiRange: ctVoiRange });
 
-  // Render the image
-  viewport.render();
+    // Render the image
+    viewport.render();
+  }
 }
 
 run();
