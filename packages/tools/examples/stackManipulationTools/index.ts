@@ -3,6 +3,8 @@ import {
   Types,
   Enums,
   getRenderingEngine,
+  volumeLoader,
+  setVolumesForViewports,
 } from '@cornerstonejs/core';
 import {
   initDemo,
@@ -84,11 +86,134 @@ const viewportIds = [
 
 const cameraSynchronizerId = 'CAMERA_SYNCHRONIZER_ID';
 
+// Define a unique id for the volume
+const volumeName = 'CT_VOLUME_ID'; // Id of the volume less loader prefix
+const volumeLoaderScheme = 'cornerstoneStreamingImageVolume'; // Loader id which defines which volume loader to use
+const volumeId = `${volumeLoaderScheme}:${volumeName}`; // VolumeId with loader id + volume id
+
+const initialIndexes = {};
+
 const SynchronizerButtonInfo = [
   { viewportLabel: 'A', viewportId: viewportIds[0] },
   { viewportLabel: 'B', viewportId: viewportIds[1] },
   //{ viewportLabel: 'C', viewportId: viewportIds[2] },
 ];
+
+const synchronizer = SynchronizerManager.createSynchronizer(
+  cameraSynchronizerId,
+  Enums.Events.CAMERA_MODIFIED,
+  (
+    synchronizerInstance,
+    sourceViewport,
+    targetViewport,
+    cameraModifiedEvent
+  ) => {
+    console.log({
+      //synchronizerInstance,
+      sourceViewport,
+      sourceViewportId: sourceViewport.viewportId,
+      targetViewportId: targetViewport.viewportId,
+      cameraModifiedEvent,
+    });
+
+    const { camera } = cameraModifiedEvent.detail;
+
+    const renderingEngine = getRenderingEngine(
+      targetViewport.renderingEngineId
+    );
+
+    if (!renderingEngine) {
+      throw new Error(
+        `No RenderingEngine for Id: ${targetViewport.renderingEngineId}`
+      );
+    }
+
+    const sViewport = renderingEngine.getViewport(sourceViewport.viewportId);
+
+    // console.log(
+    //   'find:camera:viewportId',
+    //   cameraModifiedEvent.detail.viewportId
+    // );
+
+    // console.log('find:cameraModifiedEvent', cameraModifiedEvent);
+    // console.log('find:sourceViewport', sourceViewport);
+    // console.log('find:sViewport', sViewport);
+    // console.log(
+    //   'find:sViewport.getCurrentImageIdIndex',
+    //   sViewport.getCurrentImageIdIndex()
+    // );
+
+    const tViewport = renderingEngine.getViewport(targetViewport.viewportId);
+
+    // synchronizer.setOptions(viewportIds[0], { something: '123' });
+
+    //initialIndexes[tViewport.id] = tViewport.getCurrentImageIdIndex();
+
+    // console.log('find:targetViewport', targetViewport);
+    // console.log('find:tViewport', tViewport);
+    // console.log(
+    //   'find:tViewport.getCurrentImageIdIndex',
+    //   tViewport.getCurrentImageIdIndex()
+    // );
+    // console.log('find:initialIndexes', initialIndexes);
+
+    const sourceCurrentIndex = sViewport.getCurrentImageIdIndex();
+    const targetCurrentIndex = tViewport.getCurrentImageIdIndex();
+
+    console.log('find:viewports', {
+      sourceViewport,
+      targetViewport,
+    });
+
+    console.log('find:rendering:viewports', {
+      sViewport,
+      tViewport,
+    });
+
+    console.log('find:currentIndexesPre', {
+      sourceCurrentIndex: sViewport.getCurrentImageIdIndex(),
+      targetCurrentIndex: tViewport.getCurrentImageIdIndex(),
+    });
+
+    // console.log(
+    //   'find:synchronizer.getOptions',
+    //   synchronizer.getOptions(targetViewport.viewportId)
+    // );
+
+    // const diffSourceIndex = sourceCurrentIndex - initialIndexes[sViewport.id];
+
+    //tViewport.setImageIdIndex(targetCurrentIndex + diffSourceIndex);
+
+    if (sourceCurrentIndex < tViewport.imageIds.length) {
+      tViewport.setImageIdIndex(sourceCurrentIndex);
+    } else {
+      tViewport.setImageIdIndex(tViewport.imageIds.length - 1);
+    }
+
+    console.log('find:currentIndexesPost', {
+      sourceCurrentIndex: sViewport.getCurrentImageIdIndex(),
+      targetCurrentIndex: tViewport.getCurrentImageIdIndex(),
+    });
+
+    // if (tViewport instanceof VolumeViewport) {
+    //   tViewport.setProperties(
+    //     {
+    //       voiRange: range,
+    //     },
+    //     volumeId
+    //   );
+    // } else if (tViewport instanceof StackViewport) {
+    //   tViewport.setProperties({
+    //     voiRange: range,
+    //   });
+    // } else {
+    //   throw new Error('Viewport type not supported.');
+    // }
+
+    // tViewport.setCamera(camera);
+    // tViewport.render();
+  }
+);
 
 SynchronizerButtonInfo.forEach(({ viewportLabel, viewportId }) => {
   addToggleButtonToToolbar({
@@ -97,17 +222,23 @@ SynchronizerButtonInfo.forEach(({ viewportLabel, viewportId }) => {
       const synchronizer =
         SynchronizerManager.getSynchronizer(cameraSynchronizerId);
 
-      console.log('find:synchronizer', synchronizer);
-      console.log('find:toggle', toggle);
-
       if (!synchronizer) {
         return;
       }
 
+      const renderingEngine = getRenderingEngine(renderingEngineId);
+      const viewport = renderingEngine.getViewport(viewportId);
+
       if (toggle) {
         synchronizer.add({ renderingEngineId, viewportId });
+        synchronizer.setOptions(viewportId, {
+          initialIndex: viewport.getCurrentImageIdIndex(),
+        });
       } else {
         synchronizer.remove({ renderingEngineId, viewportId });
+        synchronizer.setOptions(viewportId, {
+          initialIndex: 0,
+        });
       }
     },
   });
@@ -169,56 +300,7 @@ async function run() {
 
   //createCameraPositionSynchronizer(cameraSynchronizerId);
 
-  SynchronizerManager.createSynchronizer(
-    cameraSynchronizerId,
-    Enums.Events.CAMERA_MODIFIED,
-    (
-      synchronizerInstance,
-      sourceViewport,
-      targetViewport,
-      cameraModifiedEvent
-    ) => {
-      console.log({
-        //synchronizerInstance,
-        sourceViewport,
-        sourceViewportId: sourceViewport.viewportId,
-        targetViewportId: targetViewport.viewportId,
-        cameraModifiedEvent,
-      });
-
-      const { camera } = cameraModifiedEvent.detail;
-
-      const renderingEngine = getRenderingEngine(
-        targetViewport.renderingEngineId
-      );
-      if (!renderingEngine) {
-        throw new Error(
-          `No RenderingEngine for Id: ${targetViewport.renderingEngineId}`
-        );
-      }
-
-      const sViewport = renderingEngine.getViewport(sourceViewport.viewportId);
-
-      console.log('find:tViewport', sViewport);
-      console.log(
-        'find:sViewport.getCurrentImageIdIndex',
-        sViewport.getCurrentImageIdIndex()
-      );
-
-      const tViewport = renderingEngine.getViewport(targetViewport.viewportId);
-
-      console.log('find:tViewport', tViewport);
-      console.log(
-        'find:tViewport.getCurrentImageIdIndex',
-        tViewport.getCurrentImageIdIndex()
-      );
-
-      tViewport.setImageIdIndex(sViewport.getCurrentImageIdIndex());
-
-      // tViewport.setCamera(camera);
-      // tViewport.render();
-    }
-  );
+  //synchronizer.addEvent();
 
   // Get Cornerstone imageIds and fetch metadata into RAM
   const imageIds = await createImageIdsAndCacheMetaData({
@@ -228,6 +310,7 @@ async function run() {
       '1.3.6.1.4.1.14519.5.2.1.7009.2403.226151125820845824875394858561',
     wadoRsRoot: 'https://d3t6nz73ql33tx.cloudfront.net/dicomweb',
     type: 'STACK',
+    // type: 'VOLUME',
   });
 
   const imageIds2 = await createImageIdsAndCacheMetaData({
@@ -237,6 +320,7 @@ async function run() {
       '1.3.6.1.4.1.53684.1.1.3.4037847388.7016.1636643720.1136468',
     wadoRsRoot: 'https://d3t6nz73ql33tx.cloudfront.net/dicomweb',
     type: 'STACK',
+    // type: 'VOLUME',
   });
 
   // Instantiate a rendering engine
@@ -257,6 +341,7 @@ async function run() {
     {
       viewportId: viewportIds[0],
       type: ViewportType.STACK,
+      //type: ViewportType.ORTHOGRAPHIC,
       element,
       defaultOptions: {
         background: <Types.Point3>[0.2, 0, 0.2],
@@ -265,6 +350,7 @@ async function run() {
     {
       viewportId: viewportIds[1],
       type: ViewportType.STACK,
+      //type: ViewportType.ORTHOGRAPHIC,
       element: element2,
       defaultOptions: {
         background: <Types.Point3>[0.2, 0, 0.2],
@@ -275,41 +361,59 @@ async function run() {
   //renderingEngine.enableElement(viewportInput);
   renderingEngine.setViewports(viewportInputArray);
 
-  // Set the tool group on the viewport
-  toolGroup.addViewport(viewportIds[0], renderingEngineId);
+  const stack = true;
 
-  // Get the stack viewport that was created
-  const viewport = <Types.IStackViewport>(
-    renderingEngine.getViewport(viewportIds[0])
-  );
+  if (stack) {
+    // Set the tool group on the viewport
+    toolGroup.addViewport(viewportIds[0], renderingEngineId);
 
-  // Define a stack containing a single image
-  //const stack = [imageIds[0], imageIds[1], imageIds[2]];
-  const stack = imageIds;
+    // Get the stack viewport that was created
+    const viewport = <Types.IStackViewport>(
+      renderingEngine.getViewport(viewportIds[0])
+    );
 
-  // Set the stack on the viewport
-  viewport.setStack(stack);
+    // Define a stack containing a single image
+    //const stack = [imageIds[0], imageIds[1], imageIds[2]];
+    const stack = imageIds;
 
-  // Render the image
-  viewport.render();
+    // Set the stack on the viewport
+    viewport.setStack(stack);
 
-  // Set the tool group on the viewport
-  toolGroup.addViewport(viewportIds[1], renderingEngineId);
+    // Render the image
+    viewport.render();
 
-  // Get the stack viewport that was created
-  const viewport2 = <Types.IStackViewport>(
-    renderingEngine.getViewport(viewportIds[1])
-  );
+    // Set the tool group on the viewport
+    toolGroup.addViewport(viewportIds[1], renderingEngineId);
 
-  // Define a stack containing a single image
-  //const stack = [imageIds[0], imageIds[1], imageIds[2]];
-  const stack2 = imageIds2;
+    // Get the stack viewport that was created
+    const viewport2 = <Types.IStackViewport>(
+      renderingEngine.getViewport(viewportIds[1])
+    );
 
-  // Set the stack on the viewport
-  viewport2.setStack(stack2);
+    // Define a stack containing a single image
+    //const stack = [imageIds[0], imageIds[1], imageIds[2]];
+    const stack2 = imageIds2;
 
-  // Render the image
-  viewport2.render();
+    // Set the stack on the viewport
+    viewport2.setStack(stack2);
+
+    // Render the image
+    viewport2.render();
+  } else {
+    // Define a volume in memory
+    const volume = await volumeLoader.createAndCacheVolume(volumeId, {
+      imageIds: imageIds2,
+      //imageIds,
+    });
+
+    // Set the volume to load
+    volume.load();
+
+    setVolumesForViewports(renderingEngine, [{ volumeId }], viewportIds);
+
+    // Render the image
+    renderingEngine.renderViewports(viewportIds);
+  }
 
   // for (const viewportId of viewportIds) {
   //   // Set the tool group on the viewport
